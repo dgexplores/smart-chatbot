@@ -62,11 +62,11 @@ export const ChatWidget: React.FC = () => {
     });
 
     // Load message history via REST API
-    fetch(`${serverUrl}/api/v1/sessions/${sessionId}`)
+    fetch(`${serverUrl}/api/v1/leads/sessions/${sessionId}`)
       .then((res) => {
         if (res.ok) return res.json();
         // If session not found, create one
-        return fetch(`${serverUrl}/api/v1/sessions`, {
+        return fetch(`${serverUrl}/api/v1/leads/sessions`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ source: 'website', sessionId })

@@ -1,5 +1,6 @@
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
+import jwt from 'jsonwebtoken';
 import { Conversation } from '../models/Conversation.js';
 import { Message } from '../models/Message.js';
 import { Lead } from '../models/Lead.js';
@@ -16,6 +17,27 @@ export const initSocket = (server: HttpServer): Server => {
     }
   });
 
+  // Socket auth handshake middleware
+  io.use((socket, next) => {
+    const token = socket.handshake.auth?.token;
+    if (!token) {
+      // Allow visitor widgets to connect unauthenticated
+      socket.data.user = null;
+      return next();
+    }
+
+    try {
+      const secret = process.env.JWT_SECRET || 'asep_super_secret_jwt_key_2026';
+      const decoded = jwt.verify(token, secret);
+      socket.data.user = decoded;
+      next();
+    } catch (err) {
+      // Discard invalid token but allow connection as guest/visitor
+      socket.data.user = null;
+      next();
+    }
+  });
+
   io.on('connection', (socket: Socket) => {
     console.log(`[Socket] Client connected: ${socket.id}`);
 
@@ -29,8 +51,12 @@ export const initSocket = (server: HttpServer): Server => {
 
     // Join executive dashboard channel
     socket.on('executive:join', () => {
+      if (!socket.data.user || !['admin', 'executive'].includes(socket.data.user.role)) {
+        console.warn(`[Socket] Unauthorized room join attempt from socket ID: ${socket.id}`);
+        return socket.emit('error', { message: 'Unauthorized. Authenticated session required.' });
+      }
       socket.join('executives');
-      console.log(`[Socket] Executive ${socket.id} joined dashboard room`);
+      console.log(`[Socket] Authenticated Executive ${socket.data.user.email} joined dashboard room`);
     });
 
     // Customer / Executive typing indicators

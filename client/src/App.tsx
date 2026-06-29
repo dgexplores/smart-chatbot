@@ -1,21 +1,59 @@
 import { useState } from 'react';
 import ChatWidget from './components/chat/ChatWidget.tsx';
 import Dashboard from './components/dashboard/Dashboard.tsx';
+import Login from './components/auth/Login.tsx';
 
 function App() {
   const [viewMode, setViewMode] = useState<'customer' | 'executive'>('customer');
+  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  
+  const serverUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
+  const handleLoginSuccess = (newToken: string) => {
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setToken(null);
+    setViewMode('customer');
+  };
 
   if (viewMode === 'executive') {
+    if (!token) {
+      return (
+        <div className="relative">
+          <Login onLoginSuccess={handleLoginSuccess} serverUrl={serverUrl} />
+          {/* Floating View Switcher */}
+          <button
+            onClick={() => setViewMode('customer')}
+            className="fixed top-3 right-4 z-50 bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-md transition-all"
+          >
+            👤 Switch to Customer View
+          </button>
+        </div>
+      );
+    }
+
     return (
       <div className="relative">
         <Dashboard />
-        {/* Floating View Switcher */}
-        <button
-          onClick={() => setViewMode('customer')}
-          className="fixed top-3 right-4 z-50 bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-md transition-all"
-        >
-          👤 Switch to Customer View
-        </button>
+        {/* Floating View Switchers */}
+        <div className="fixed top-3 right-4 z-50 flex gap-2">
+          <button
+            onClick={() => setViewMode('customer')}
+            className="bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-md transition-all"
+          >
+            👤 Switch to Customer View
+          </button>
+          <button
+            onClick={handleLogout}
+            className="bg-red-950 text-red-200 border border-red-900 hover:bg-red-900 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-md transition-all"
+          >
+            🚪 Logout
+          </button>
+        </div>
       </div>
     );
   }
