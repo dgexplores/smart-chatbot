@@ -49,9 +49,13 @@ const CrmPanel: React.FC<CrmPanelProps> = ({ lead, serverUrl, fetchLeads, active
 
   const handleSaveNotes = () => {
     setIsSavingNotes(true);
+    const token = localStorage.getItem('token');
     fetch(`${serverUrl}/api/v1/leads/${lead._id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({ notes })
     })
       .then((res) => res.json())
@@ -81,9 +85,13 @@ const CrmPanel: React.FC<CrmPanelProps> = ({ lead, serverUrl, fetchLeads, active
     const updatedReminders = [...reminders, newReminder];
     setReminders(updatedReminders);
 
+    const token = localStorage.getItem('token');
     fetch(`${serverUrl}/api/v1/leads/${lead._id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({ reminders: updatedReminders })
     })
       .then((res) => res.json())
@@ -101,9 +109,13 @@ const CrmPanel: React.FC<CrmPanelProps> = ({ lead, serverUrl, fetchLeads, active
     const updated = reminders.map((rem, i) => i === index ? { ...rem, completed: !rem.completed } : rem);
     setReminders(updated);
 
+    const token = localStorage.getItem('token');
     fetch(`${serverUrl}/api/v1/leads/${lead._id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({ reminders: updated })
     })
       .then((res) => res.json())
@@ -312,8 +324,13 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     fetchLeads();
 
-    // Connect to Sockets as Executive
-    const socket = io(serverUrl, { withCredentials: true });
+    const token = localStorage.getItem('token');
+
+    // Connect to Sockets as Executive sending credentials
+    const socket = io(serverUrl, {
+      auth: { token },
+      withCredentials: true
+    });
     socketRef.current = socket;
 
     socket.emit('executive:join');
@@ -322,7 +339,7 @@ export const Dashboard: React.FC = () => {
     socket.on('lead:updated', () => {
       fetchLeads();
       if (selectedSessionId) {
-        fetch(`${serverUrl}/api/v1/sessions/${selectedSessionId}`)
+        fetch(`${serverUrl}/api/v1/leads/sessions/${selectedSessionId}`)
           .then((res) => res.json())
           .then((data) => {
             if (data) {
@@ -349,7 +366,12 @@ export const Dashboard: React.FC = () => {
   }, [selectedSessionId]);
 
   const fetchLeads = () => {
-    fetch(`${serverUrl}/api/v1/leads`)
+    const token = localStorage.getItem('token');
+    fetch(`${serverUrl}/api/v1/leads`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
       .then((res) => {
         if (res.ok) return res.json();
         return { data: [] };
@@ -368,8 +390,14 @@ export const Dashboard: React.FC = () => {
     setActiveMeeting(null);
     setActiveProposal(null);
 
+    const token = localStorage.getItem('token');
+
     // Fetch conversation details to check takeover state
-    fetch(`${serverUrl}/api/v1/sessions/${sessionId}`)
+    fetch(`${serverUrl}/api/v1/leads/sessions/${sessionId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data && data.messages) {
@@ -433,9 +461,14 @@ export const Dashboard: React.FC = () => {
 
     setUploadStatus('Processing embeddings...');
 
+    const token = localStorage.getItem('token');
+
     fetch(`${serverUrl}/api/v1/knowledge/upload`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({
         title: docTitle,
         category: docCategory,
