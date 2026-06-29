@@ -5,6 +5,7 @@ import { Conversation } from '../models/Conversation.js';
 import { Message } from '../models/Message.js';
 import { Meeting } from '../models/Meeting.js';
 import { Proposal } from '../models/Proposal.js';
+import { getIO } from '../sockets/socket.js';
 import mongoose from 'mongoose';
 
 const router = Router();
@@ -24,6 +25,10 @@ router.patch('/:leadId', authenticate, restrictTo('admin', 'executive'), async (
   try {
     const { leadId } = req.params;
     const { notes, reminders } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(leadId)) {
+      return res.status(400).json({ success: false, message: 'Invalid lead ID format.' });
+    }
     
     const lead = await Lead.findById(leadId);
     if (!lead) {
@@ -31,12 +36,23 @@ router.patch('/:leadId', authenticate, restrictTo('admin', 'executive'), async (
     }
 
     if (notes !== undefined) lead.notes = notes;
-    if (reminders !== undefined) lead.reminders = reminders;
+    
+    // Quick validation for reminders format if provided
+    if (reminders !== undefined) {
+      if (!Array.isArray(reminders)) {
+        return res.status(400).json({ success: false, message: 'Reminders must be an array.' });
+      }
+      for (const rem of reminders) {
+        if (!rem.title || !rem.date) {
+          return res.status(400).json({ success: false, message: 'Each reminder must contain a title and a date.' });
+        }
+      }
+      lead.reminders = reminders;
+    }
 
     await lead.save();
 
     // Notify executives over socket
-    const { getIO } = await import('../sockets/socket.js');
     try {
       getIO().to('executives').emit('lead:updated', lead);
     } catch (e) {}
