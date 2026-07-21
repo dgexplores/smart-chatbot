@@ -3,9 +3,13 @@
 @tailwind utilities;
 
 @layer base {
+  :root { color-scheme: dark; }
+  html { scroll-behavior: smooth; }
   body {
-    @apply bg-slate-50 text-slate-900;
+    @apply bg-[#07032b] text-[#f7f5ff] antialiased;
   }
+  button, a, input { -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 3px solid #f8d447; outline-offset: 3px; }
 }
 
 /* Custom Scrollbars */
@@ -17,5 +21,9 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full hover:bg-slate-400;
+  @apply bg-[#7047f5] rounded-full hover:bg-[#9e83ff];
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

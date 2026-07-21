@@ -36,7 +36,10 @@ export const ChatWidget: React.FC = () => {
   useEffect(() => {
     if (!sessionId) return;
 
-    const serverUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+    const serverUrl = import.meta.env.VITE_API_URL;
+    // The public Vercel demo can be explored without a separately deployed API.
+    // Connect only when an API endpoint is explicitly configured.
+    if (!serverUrl) return;
     const socket = io(serverUrl, {
       withCredentials: true
     });
@@ -103,15 +106,24 @@ export const ChatWidget: React.FC = () => {
   const handleSendMessage = (text = inputMessage) => {
     if (!text.trim()) return;
 
-    const msgPayload = {
+    const msgPayload: ChatMessage & { sessionId: string } = {
       sessionId,
       sender: 'CUSTOMER',
       message: text,
+      messageType: 'TEXT' as const,
       timestamp: new Date().toISOString()
     };
 
-    // Emit via socket
-    socketRef.current?.emit('chat:message', msgPayload);
+    if (socketRef.current) {
+      socketRef.current.emit('chat:message', msgPayload);
+    } else {
+      setMessages((previous) => [...previous, msgPayload, {
+        sender: 'AI',
+        message: 'Thanks — I’ve captured that. Connect an API endpoint to continue with live qualification and a tailored brief.',
+        messageType: 'TEXT',
+        timestamp: new Date().toISOString()
+      }]);
+    }
 
     setInputMessage('');
   };
@@ -129,6 +141,7 @@ export const ChatWidget: React.FC = () => {
       {/* Floating Button */}
       {!isOpen && (
         <button
+          aria-label="Open chat"
           onClick={() => setIsOpen(true)}
           className="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-primary-dark transition-all duration-300 transform hover:scale-105 active:scale-95"
         >
@@ -138,7 +151,7 @@ export const ChatWidget: React.FC = () => {
 
       {/* Expanded Chat Widget */}
       {isOpen && (
-        <div className="w-[380px] h-[550px] bg-white rounded-2xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300">
+        <div className="h-[min(550px,calc(100vh-3rem))] w-[min(380px,calc(100vw-2rem))] rounded-xl border border-[#5a4a99] bg-white shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300">
           {/* Header */}
           <div className="bg-primary p-4 flex items-center justify-between text-white">
             <div className="flex items-center gap-3">

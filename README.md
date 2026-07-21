@@ -3,6 +3,12 @@ An industry-grade, autonomous pre-sales qualification agent and real-time CRM mo
 
 This platform uses an event-driven web-sockets architecture, a custom state-machine orchestrator powered by the Gemini Flash Lite SDK, semantic RAG vector querying, and custom transactional mail dispatches to qualify leads, automate proposals, and schedule callbacks dynamically.
 
+## Live Demo
+
+The redesigned client is deployed on Vercel: [https://client-blue-nu-26.vercel.app](https://client-blue-nu-26.vercel.app)
+
+> The public demo runs without a backend by default. Set `VITE_API_URL` to a deployed API URL to enable live Socket.io conversations, lead qualification, and executive handoff.
+
 ---
 
 ## 🛠️ Tech Stack & Architecture
