@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    color-scheme: light;
+    color-scheme: dark;
     --duration-fast: 250ms;
     --duration-quick: 150ms;
     --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -12,10 +12,10 @@
   }
   html { scroll-behavior: smooth; }
   body {
-    @apply bg-[#f4f4f0] text-[#080808] antialiased;
+    @apply bg-[#09023b] text-white antialiased;
   }
   button, a, input { -webkit-tap-highlight-color: transparent; }
-  :focus-visible { outline: 3px solid #e61919; outline-offset: 3px; }
+  :focus-visible { outline: 3px solid #f3c928; outline-offset: 3px; }
 }
 
 /* Custom Scrollbars */
@@ -27,13 +27,14 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-[#e61919] hover:bg-[#a80f0f];
+  @apply bg-[#6c3cf0] hover:bg-[#9a7cff];
 }
 
-.industrial-link { transition: background-color var(--duration-quick) var(--ease-smooth-out), color var(--duration-quick) var(--ease-smooth-out); }
-.industrial-link:hover { background: #080808; color: #f4f4f0; }
-.industrial-action { transition: transform var(--duration-fast) var(--ease-smooth-out), background-color var(--duration-fast) var(--ease-smooth-out); }
-.industrial-action:hover { transform: translateY(calc(-1 * var(--distance-base))); }
+.brand-link { transition: color var(--duration-quick) var(--ease-smooth-out); }
+.brand-link:hover { color: #c6b6ff; }
+.brand-action { transition: transform var(--duration-fast) var(--ease-smooth-out), background-color var(--duration-fast) var(--ease-smooth-out), box-shadow var(--duration-fast) var(--ease-smooth-out); }
+.brand-action:hover { transform: translateY(calc(-1 * var(--distance-base))); }
+.brand-action:active { transform: scale(0.96); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
