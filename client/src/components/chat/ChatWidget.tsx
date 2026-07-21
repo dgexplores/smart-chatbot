@@ -143,7 +143,7 @@ export const ChatWidget: React.FC = () => {
         <button
           aria-label="Open chat"
           onClick={() => setIsOpen(true)}
-          className="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-primary-dark transition-all duration-300 transform hover:scale-105 active:scale-95"
+          className="w-14 h-14 border-2 border-[#080808] bg-primary text-white flex items-center justify-center shadow-[4px_4px_0_#080808] hover:bg-primary-dark transition-[transform,background-color] duration-[var(--duration-fast)] ease-[var(--ease-smooth-out)] hover:-translate-y-1 active:scale-[0.96]"
         >
           <MessageCircle className="w-6 h-6" />
         </button>
@@ -151,7 +151,7 @@ export const ChatWidget: React.FC = () => {
 
       {/* Expanded Chat Widget */}
       {isOpen && (
-        <div className="h-[min(550px,calc(100vh-3rem))] w-[min(380px,calc(100vw-2rem))] rounded-xl border border-[#5a4a99] bg-white shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300">
+        <div className="h-[min(550px,calc(100vh-3rem))] w-[min(380px,calc(100vw-2rem))] border-2 border-[#080808] bg-white shadow-[8px_8px_0_#080808] flex flex-col overflow-hidden">
           {/* Header */}
           <div className="bg-primary p-4 flex items-center justify-between text-white">
             <div className="flex items-center gap-3">
@@ -163,7 +163,7 @@ export const ChatWidget: React.FC = () => {
                 <h3 className="font-semibold text-sm leading-tight">
                   {takeoverStatus.isTakeoverActive ? 'Human Consultant' : 'AI Sales Assistant'}
                 </h3>
-                <span className="text-[11px] text-blue-200">
+                <span className="text-[11px] text-white">
                   {takeoverStatus.isTakeoverActive ? 'Live Handoff Active' : 'Online • Custom Solutions'}
                 </span>
               </div>
@@ -182,12 +182,12 @@ export const ChatWidget: React.FC = () => {
           </div>
 
           {/* Messages Thread */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#f4f4f0]">
             {messages.length === 0 && (
-              <div className="text-center py-8 px-4 text-slate-400 space-y-2">
-                <Sparkles className="w-8 h-8 text-primary/30 mx-auto mb-2" />
-                <p className="text-sm font-semibold">How can we help your business today?</p>
-                <p className="text-xs">I can guide you through our core services, build custom project estimates, and prepare proposal specs.</p>
+              <div className="text-center py-8 px-4 text-[#252525] space-y-2">
+                <Sparkles className="w-8 h-8 text-primary mx-auto mb-2" />
+                <p className="text-sm font-black">What are you building?</p>
+                <p className="text-xs leading-5">I’ll help structure the requirements and point you to the next useful action.</p>
               </div>
             )}
 
@@ -216,8 +216,8 @@ export const ChatWidget: React.FC = () => {
                     <div
                       className={`p-3 rounded-2xl text-sm ${
                         isCustomer
-                          ? 'bg-primary text-white rounded-br-none shadow-md'
-                          : 'bg-white text-slate-800 border border-slate-100 rounded-bl-none shadow-sm'
+                          ? 'bg-primary text-white rounded-none'
+                          : 'bg-white text-[#080808] border border-[#080808] rounded-none'
                       }`}
                     >
                       {/* Standard text */}
@@ -267,22 +267,22 @@ export const ChatWidget: React.FC = () => {
 
           {/* Quick Actions / Suggestions */}
           {!takeoverStatus.isTakeoverActive && (
-            <div className="p-2 border-t border-slate-100 flex gap-2 overflow-x-auto bg-white whitespace-nowrap scrollbar-none">
+            <div className="p-2 border-t border-[#080808] flex gap-2 overflow-x-auto bg-white whitespace-nowrap scrollbar-none">
               <button
                 onClick={() => handleQuickAction('I need a website for my business')}
-                className="bg-slate-100 hover:bg-slate-200 text-[11px] font-medium text-slate-600 px-3 py-1.5 rounded-full transition-colors inline-block"
+                className="border border-[#080808] bg-white hover:bg-[#080808] hover:text-white text-[11px] font-bold text-[#080808] px-3 py-1.5 transition-colors duration-[var(--duration-quick)] inline-block"
               >
                 🕸️ Need website
               </button>
               <button
                 onClick={() => handleQuickAction('How much does standard software cost?')}
-                className="bg-slate-100 hover:bg-slate-200 text-[11px] font-medium text-slate-600 px-3 py-1.5 rounded-full transition-colors inline-block"
+                className="border border-[#080808] bg-white hover:bg-[#080808] hover:text-white text-[11px] font-bold text-[#080808] px-3 py-1.5 transition-colors duration-[var(--duration-quick)] inline-block"
               >
                 💰 Cost estimates
               </button>
               <button
                 onClick={() => handleQuickAction('I want to schedule a kick-off meeting')}
-                className="bg-slate-100 hover:bg-slate-200 text-[11px] font-medium text-slate-600 px-3 py-1.5 rounded-full transition-colors inline-block"
+                className="border border-[#080808] bg-white hover:bg-[#080808] hover:text-white text-[11px] font-bold text-[#080808] px-3 py-1.5 transition-colors duration-[var(--duration-quick)] inline-block"
               >
                 📅 Book meeting
               </button>
@@ -290,18 +290,18 @@ export const ChatWidget: React.FC = () => {
           )}
 
           {/* Input Area */}
-          <div className="p-3 bg-white border-t border-slate-100 flex items-center gap-2">
+          <div className="p-3 bg-white border-t border-[#080808] flex items-center gap-2">
             <input
               type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
               placeholder="Ask a question or explain requirements..."
-              className="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors bg-slate-50/50"
+              className="flex-1 border border-[#080808] rounded-none px-4 py-2.5 text-sm text-[#080808] placeholder:text-[#454545] focus:outline-none focus:border-primary transition-colors bg-[#f4f4f0]"
             />
             <button
               onClick={() => handleSendMessage()}
-              className="bg-primary hover:bg-primary-dark text-white p-2.5 rounded-xl shadow-md transition-all duration-300 active:scale-95 flex items-center justify-center"
+              className="bg-primary hover:bg-primary-dark text-white p-2.5 border border-[#080808] rounded-none transition-[transform,background-color] duration-[var(--duration-fast)] ease-[var(--ease-smooth-out)] active:scale-[0.96] flex items-center justify-center"
             >
               <Send className="w-4 h-4" />
             </button>

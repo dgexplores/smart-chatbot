@@ -3,13 +3,19 @@
 @tailwind utilities;
 
 @layer base {
-  :root { color-scheme: dark; }
+  :root {
+    color-scheme: light;
+    --duration-fast: 250ms;
+    --duration-quick: 150ms;
+    --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --distance-base: 8px;
+  }
   html { scroll-behavior: smooth; }
   body {
-    @apply bg-[#07032b] text-[#f7f5ff] antialiased;
+    @apply bg-[#f4f4f0] text-[#080808] antialiased;
   }
   button, a, input { -webkit-tap-highlight-color: transparent; }
-  :focus-visible { outline: 3px solid #f8d447; outline-offset: 3px; }
+  :focus-visible { outline: 3px solid #e61919; outline-offset: 3px; }
 }
 
 /* Custom Scrollbars */
@@ -21,8 +27,13 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-[#7047f5] rounded-full hover:bg-[#9e83ff];
+  @apply bg-[#e61919] hover:bg-[#a80f0f];
 }
+
+.industrial-link { transition: background-color var(--duration-quick) var(--ease-smooth-out), color var(--duration-quick) var(--ease-smooth-out); }
+.industrial-link:hover { background: #080808; color: #f4f4f0; }
+.industrial-action { transition: transform var(--duration-fast) var(--ease-smooth-out), background-color var(--duration-fast) var(--ease-smooth-out); }
+.industrial-action:hover { transform: translateY(calc(-1 * var(--distance-base))); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }

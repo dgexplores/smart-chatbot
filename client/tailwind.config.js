@@ -9,22 +9,22 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#7047F5',
-          dark: '#4D2FC1',
-          light: '#9E83FF',
+          DEFAULT: '#E61919',
+          dark: '#A80F0F',
+          light: '#FF4A4A',
         },
         secondary: {
           DEFAULT: '#64748B',
           dark: '#475569',
           light: '#94A3B8',
         },
-        success: '#38D7B4',
-        warning: '#F8D447',
+        success: '#147A46',
+        warning: '#B55B00',
         danger: '#EF4444',
       },
       fontFamily: {
-        sans: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['Archivo', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['Arial', 'Helvetica', 'sans-serif'],
+        display: ['Arial Black', 'Arial', 'Helvetica', 'sans-serif'],
       },
       borderRadius: {
         lg: '12px',
