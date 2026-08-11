@@ -65,6 +65,7 @@ graph TD
   * **Competitor position** — `CompetitorPrice` records; prices ease down when we sit well above the market median and may rise when below.
   * **Demand trend** — qualified-lead volume over the last 7 days vs. the previous 7.
 * Every proposal records which pricing version generated it (`pricingVersion` + matched `services`) so the feedback loop can attribute outcomes to price points. Stale SENT proposals auto-expire after 30 days.
+* **Updating over time:** the job runs at boot and then every `PRICING_REFRESH_HOURS` (default 24h). Record competitor observations via `POST /api/v1/competitors` (`{ service, competitor, price }`), inspect the live rate card via `GET /api/v1/pricing/rates`, and trigger an immediate re-tune via `POST /api/v1/pricing/recompute`. Proposal decisions (`PATCH /api/v1/proposals/:id/status`) also trigger a recompute on the spot.
 
 ---
 

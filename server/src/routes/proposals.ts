@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { authenticate, restrictTo, AuthenticatedRequest } from '../middleware/auth.js';
 import { Proposal } from '../models/Proposal.js';
 import { getIO } from '../sockets/socket.js';
+import { recomputeMultipliers } from '../services/pricing.js';
 
 const router = Router();
 
@@ -41,6 +42,14 @@ router.patch(
       try {
         getIO().to('executives').emit('proposal:updated', proposal);
       } catch (e) {}
+
+      // Feed the decision into the adaptive pricing engine immediately
+      // (no-op until a service accumulates enough outcomes).
+      try {
+        await recomputeMultipliers();
+      } catch (error) {
+        console.error('[Proposals] Pricing recompute after status update failed:', error);
+      }
 
       return res.json({ success: true, proposal });
     } catch (error: any) {

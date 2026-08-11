@@ -1,9 +1,10 @@
 import { PricingConfig, ServiceRate } from '../models/PricingConfig.js';
-
-export type { ServiceRate };
 import { CompetitorPrice } from '../models/CompetitorPrice.js';
 import { Proposal } from '../models/Proposal.js';
 import { Lead } from '../models/Lead.js';
+import { config } from '../config/env.js';
+
+export type { ServiceRate };
 
 export interface ActiveRates {
   version: number;
@@ -288,6 +289,10 @@ export const startPricingJob = (): void => {
     }
   };
 
+  // Run once at boot, then on the configured refresh interval so prices
+  // keep adapting over time.
   run();
-  setInterval(run, 24 * 60 * 60 * 1000).unref();
+  const intervalMs = config.pricingRefreshHours * 60 * 60 * 1000;
+  setInterval(run, intervalMs).unref();
+  console.log(`[Pricing] Adaptive pricing job scheduled every ${config.pricingRefreshHours}h.`);
 };

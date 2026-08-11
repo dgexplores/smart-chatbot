@@ -5,6 +5,10 @@ import { CompetitorPrice } from '../models/CompetitorPrice.js';
 import { Proposal } from '../models/Proposal.js';
 import { Lead } from '../models/Lead.js';
 
+vi.mock('../config/env.js', () => ({
+  config: { pricingRefreshHours: 24 }
+}));
+
 vi.mock('../models/PricingConfig.js', () => ({
   PricingConfig: {
     findOne: vi.fn(),

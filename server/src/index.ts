@@ -11,6 +11,8 @@ import authRoutes from './routes/auth.js';
 import knowledgeRoutes from './routes/knowledge.js';
 import leadRoutes from './routes/leads.js';
 import proposalRoutes from './routes/proposals.js';
+import competitorRoutes from './routes/competitors.js';
+import pricingRoutes from './routes/pricing.js';
 import { rateLimiter } from './middleware/rateLimiter.js';
 import { config } from './config/env.js';
 import { ensurePricingConfig, startPricingJob } from './services/pricing.js';
@@ -47,6 +49,8 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/knowledge', knowledgeRoutes);
 app.use('/api/v1/leads', leadRoutes);
 app.use('/api/v1/proposals', proposalRoutes);
+app.use('/api/v1/competitors', competitorRoutes);
+app.use('/api/v1/pricing', pricingRoutes);
 
 // Static Assets
 app.use('/proposals', express.static(path.join(__dirname, '../public/proposals')));
