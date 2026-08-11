@@ -13,9 +13,11 @@ import leadRoutes from './routes/leads.js';
 import proposalRoutes from './routes/proposals.js';
 import competitorRoutes from './routes/competitors.js';
 import pricingRoutes from './routes/pricing.js';
+import marketTargetRoutes from './routes/marketTargets.js';
 import { rateLimiter } from './middleware/rateLimiter.js';
 import { config } from './config/env.js';
 import { ensurePricingConfig, startPricingJob } from './services/pricing.js';
+import { startMarketScanner } from './services/marketScanner.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,6 +31,8 @@ await initializeQdrant();
 // Seed + schedule adaptive pricing
 await ensurePricingConfig();
 startPricingJob();
+// Schedule market-rate scanning (competitor pricing pages)
+startMarketScanner();
 
 const app = express();
 const port = config.port;
@@ -51,6 +55,7 @@ app.use('/api/v1/leads', leadRoutes);
 app.use('/api/v1/proposals', proposalRoutes);
 app.use('/api/v1/competitors', competitorRoutes);
 app.use('/api/v1/pricing', pricingRoutes);
+app.use('/api/v1/market-targets', marketTargetRoutes);
 
 // Static Assets
 app.use('/proposals', express.static(path.join(__dirname, '../public/proposals')));

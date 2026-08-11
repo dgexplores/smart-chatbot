@@ -27,7 +27,8 @@ const envSchema = z
     SMTP_USER: z.string().default(''),
     SMTP_PASS: z.string().default(''),
     SMTP_FROM: z.string().min(1).default('noreply@asep.local'),
-    PRICING_REFRESH_HOURS: z.coerce.number().int().positive().default(24)
+    PRICING_REFRESH_HOURS: z.coerce.number().int().positive().default(24),
+    MARKET_SCAN_HOURS: z.coerce.number().int().positive().default(24)
   })
   .superRefine((data, ctx) => {
     if (!data.GEMINI_API_KEY && data.MOCK_LLM !== true) {
@@ -63,7 +64,8 @@ const parsed = envSchema
     smtpUser: data.SMTP_USER,
     smtpPass: data.SMTP_PASS,
     smtpFrom: data.SMTP_FROM,
-    pricingRefreshHours: data.PRICING_REFRESH_HOURS
+    pricingRefreshHours: data.PRICING_REFRESH_HOURS,
+    marketScanHours: data.MARKET_SCAN_HOURS
   }))
   .safeParse(process.env);
 

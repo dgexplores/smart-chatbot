@@ -66,6 +66,7 @@ graph TD
   * **Demand trend** — qualified-lead volume over the last 7 days vs. the previous 7.
 * Every proposal records which pricing version generated it (`pricingVersion` + matched `services`) so the feedback loop can attribute outcomes to price points. Stale SENT proposals auto-expire after 30 days.
 * **Updating over time:** the job runs at boot and then every `PRICING_REFRESH_HOURS` (default 24h). Record competitor observations via `POST /api/v1/competitors` (`{ service, competitor, price }`), inspect the live rate card via `GET /api/v1/pricing/rates`, and trigger an immediate re-tune via `POST /api/v1/pricing/recompute`. Proposal decisions (`PATCH /api/v1/proposals/:id/status`) also trigger a recompute on the spot.
+* **Automatic market capture:** a market scanner periodically fetches configured competitor pricing pages (`MarketTarget` records, managed via `/api/v1/market-targets`) and extracts INR rates — JSON-LD structured data first, plain `₹` amounts as fallback. Observations land in `CompetitorPrice` and feed the next re-tune. Run it on demand with `POST /api/v1/market-targets/scan`; the check interval is `MARKET_SCAN_HOURS` (default 24h) and each target has its own refresh window (`intervalHours`, default weekly).
 
 ---
 
