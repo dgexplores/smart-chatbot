@@ -8,6 +8,7 @@ import { Meeting } from '../models/Meeting.js';
 import { generateProposalPDF } from '../services/pdf.js';
 import { sendEmail } from '../services/email.js';
 import { config } from '../config/env.js';
+import { getActiveRates, estimatePrice, ActiveRates, ServiceRate } from '../services/pricing.js';
 
 export class AgentOrchestrator {
   /**
@@ -63,20 +64,24 @@ export class AgentOrchestrator {
         ? chunks.map((c) => `[Topic: ${c.payload.title}] ${c.payload.content}`).join('\n\n')
         : "Company: XYZ Technologies. Services: Web Development, Custom Software, App Development.";
 
+      // 4.5 Fetch active pricing rates so the AI quotes current, market-aware prices
+      const activePricing = await getActiveRates();
+
       // 5. Compile Prompt
       const prompt = this.compilePrompt(
         conversation,
         lead,
         historyContext,
         ragContext,
-        customerMessage
+        customerMessage,
+        activePricing
       );
 
       // 6. Get Structured Response from AI
       const aiResponse = await generateAIResponse(prompt, conversation.currentStage);
 
       // 7. Process Actions returned by AI
-      await this.executeBusinessActions(conversation, lead, aiResponse);
+      await this.executeBusinessActions(conversation, lead, aiResponse, activePricing);
 
       // 8. Transition Stage if AI recommends it
       if (aiResponse.stage && aiResponse.stage !== conversation.currentStage) {
@@ -101,7 +106,8 @@ export class AgentOrchestrator {
     lead: ILead,
     history: string,
     ragContext: string,
-    userInput: string
+    userInput: string,
+    pricingRates: ActiveRates
   ): string {
     const stageObjectives: Record<string, string> = {
       GREETING: "Welcome the customer politely and understand their general inquiry.",
@@ -116,6 +122,7 @@ export class AgentOrchestrator {
     };
 
     const nextObjective = stageObjectives[conversation.currentStage] || stageObjectives.GREETING;
+    const pricingBlock = this.buildPricingBlock(pricingRates.rates);
 
     return `
 You are an expert AI Pre-Sales Consultant representing the company. Your goal is to qualify leads, clear customer doubts concisely, and schedule callback calls.
@@ -128,13 +135,8 @@ CONVERSATION GUIDELINES:
 5. **Do NOT repeat meeting requests:** Ask to book a meeting or callback *only once*. If the user declines or changes the topic, do not repeat the scheduling offer. Respect their choice.
 6. **Explain in simple, ground-level terms.** If a client is confused or non-technical, explain things simply. Do not use complex jargon. Instead of saying "React Next.js microservices database hydration", say "we build a very fast, secure page that works great on mobile phones and lets your clients book slots easily."
 7. **Schedule according to user comfort:** Ask the user for their preferred date and time for a callback. Do not assign one yourself. Extract this preferred time and output it in the JSON field \`customerData.preferredMeetingTime\`.
-8. **Indian Market Pricing & Dynamic Explanations:** Offer explainable, market-revised pricing in Indian Rupees (INR - ₹) for all our services:
-   - **Web Designing & Development:** Basic business sites range from ₹25,000 to ₹50,000. Professional dynamic portal development (Stripe gateway, bookings, database) ranges from ₹1 Lakh to ₹2.5 Lakhs. Custom Enterprise SaaS web systems range from ₹3 Lakhs to ₹8 Lakhs. (Explain: covers custom React/Next.js design, mobile grids, database setups, and API integrations).
-   - **UI/UX Designing:** Interactive wireframing, branding systems, and dynamic Figma mockup design screens range from ₹25,000 to ₹1 Lakh. (Explain: covers thorough user research, prototyping layout screens, and unlimited review iterations).
-   - **Mobile Applications:** Customized native/cross-platform iOS & Android mobile apps (Flutter, React Native) range from ₹3.5 Lakhs to ₹10 Lakhs+. (Explain: covers App Store / Play Store licensing, server database synchronization, push notifications, and geolocation APIs).
-   - **SEO:** Ranking, backlinks, page-speed check: ₹15,000 to ₹40,000/month.
-   - **Content Writing:** High-quality SEO copywriting: ₹10,000 to ₹25,000/month.
-   - **Digital Marketing & PPC Ads Shield:** Campaign setup & ad fraud fraud-prevention block shield: ₹25,000 to ₹60,000/month. (Explain: protects budget from fake bot clicks).
+8. **Indian Market Pricing & Dynamic Explanations:** Offer explainable, market-revised pricing in Indian Rupees (INR - ₹) for all our services. Quote ONLY from the CURRENT price ranges below — they are refreshed automatically as market conditions change, so never invent prices outside them:
+${pricingBlock}
 9. **Negotiations & Handoff:** If the customer attempts to negotiate the pricing, requests a discount, or states that our packages are too expensive, DO NOT bargain. Acknowledge their budget constraints politely, immediately set the stage to 'QUALIFICATION' and add 'HANDOFF' to your actions array so a senior consultant can call them back to discuss a custom plan.
 10. **Conclusion & Exit Flow:** In your conclusion (after answering queries or scheduling a call), ask: "Is there anything else I can help you with today?" If the user replies that they don't need anything else (e.g. "no", "thanks", "no help needed"), output a warm greeting exit message (e.g., "Thank you for reaching out to XYZ Technologies! Have a wonderful day!") and transition your stage to 'CLOSED'.
 
@@ -194,7 +196,8 @@ Match this schema exactly:
   private static async executeBusinessActions(
     conversation: IConversation,
     lead: ILead,
-    aiResponse: AIResponse
+    aiResponse: AIResponse,
+    activePricing: ActiveRates
   ): Promise<void> {
     if (!aiResponse.actions || aiResponse.actions.length === 0) return;
 
@@ -309,7 +312,7 @@ XYZ Technologies Consulting Team`;
             '30 days of post-launch technical consulting support'
           ];
           
-          let estimatedCost = this.calculateIndianPrice(lead.industry || '', features, lead.budget);
+          const { estimatedCost, services } = estimatePrice(lead.industry || '', features, lead.budget, activePricing.rates);
 
           const pdfData = {
             proposalNumber,
@@ -338,6 +341,9 @@ XYZ Technologies Consulting Team`;
               deliverables,
               timeline: pdfData.timeline,
               estimatedCost,
+              services,
+              pricingVersion: activePricing.version,
+              expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
               paymentMilestones: [
                 { description: 'Project Kick-off (Advance)', amount: Math.round(estimatedCost * 0.4) },
                 { description: 'Development Milestone Demo', amount: Math.round(estimatedCost * 0.4) },
@@ -474,62 +480,20 @@ XYZ Technologies Consulting Team`;
     }
   }
 
-  private static calculateIndianPrice(industry: string, features: string[], budgetStr?: string): number {
-    if (budgetStr) {
-      const clean = budgetStr.toLowerCase();
-      if (clean.includes('lakh') || clean.includes('l') || clean.includes('lk')) {
-        const match = clean.match(/([\d.]+)/);
-        if (match) {
-          return Math.round(parseFloat(match[1]) * 100000);
-        }
-      }
-      const matchVal = clean.match(/([\d,]+)/);
-      if (matchVal) {
-        const val = parseInt(matchVal[1].replace(/,/g, ''), 10);
-        if (val > 0) {
-          if (val < 15) return val * 100000;
-          return val;
-        }
-      }
-    }
-
-    let basePrice = 0;
-    let hasService = false;
-
-    // Detect requested services and add standard Indian competitive rates:
-    features.forEach(f => {
-      const feat = f.toLowerCase();
-      if (feat.includes('ui') || feat.includes('ux') || feat.includes('design') || feat.includes('wireframe') || feat.includes('figma')) {
-        basePrice += 45000; // Custom UI/UX
-        hasService = true;
-      }
-      if (feat.includes('mobile') || feat.includes('app') || feat.includes('android') || feat.includes('ios') || feat.includes('flutter')) {
-        basePrice += 450000; // Mobile App Development
-        hasService = true;
-      }
-      if (feat.includes('seo') || feat.includes('optimization') || feat.includes('ranking')) {
-        basePrice += 25000; // SEO Retainer setup
-        hasService = true;
-      }
-      if (feat.includes('marketing') || feat.includes('campaign') || feat.includes('ad') || feat.includes('ppc')) {
-        basePrice += 30000; // PPC Campaign & Fraud Shield setup
-        hasService = true;
-      }
-      if (feat.includes('content') || feat.includes('writing') || feat.includes('blog')) {
-        basePrice += 15000; // Content Writing setup
-        hasService = true;
-      }
-      if (feat.includes('web') || feat.includes('site') || feat.includes('e-commerce') || feat.includes('portal')) {
-        basePrice += 85000; // Web Designing & Development
-        hasService = true;
-      }
-    });
-
-    if (!hasService) {
-      basePrice = 35000; // default basic web service rate
-    }
-
-    return basePrice;
+  /** Builds the current, market-adjusted price ranges injected into the AI prompt. */
+  private static buildPricingBlock(rates: ServiceRate[]): string {
+    return rates
+      .map((rate) => {
+        const tierText = rate.tiers
+          .map((tier) => {
+            const lo = Math.round(tier.minPrice * rate.multiplier);
+            const hi = Math.round(tier.maxPrice * rate.multiplier);
+            return `${tier.name}: ₹${lo.toLocaleString('en-IN')} to ₹${hi.toLocaleString('en-IN')}`;
+          })
+          .join('; ');
+        return `   - **${rate.label}:** ${rate.description} ${tierText}.`;
+      })
+      .join('\n');
   }
 
   private static parseMeetingDate(prefTime?: string): Date {

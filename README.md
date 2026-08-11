@@ -58,6 +58,14 @@ graph TD
 ### 📧 3. Deferred Transactional Emailing
 * If the user shares their email address *after* a callback has been scheduled, the backend captures the save event and dispatches the tailored project brief (including their timeline, budget, features, and Meet link) directly to their inbox.
 
+### 💹 4. Adaptive Market Pricing
+* Pricing lives as **versioned data**, not code: a `PricingConfig` rate card that the AI reads fresh on every conversation, so quotes always use the *current* ranges.
+* A daily background job re-tunes each service's price multiplier within a bounded corridor (±30% by default) based on:
+  * **Win/loss feedback** — proposal outcomes recorded via `PATCH /api/v1/proposals/:id/status` (win rate > 60% nudges prices up, < 35% nudges them down, minimum 5 samples per service).
+  * **Competitor position** — `CompetitorPrice` records; prices ease down when we sit well above the market median and may rise when below.
+  * **Demand trend** — qualified-lead volume over the last 7 days vs. the previous 7.
+* Every proposal records which pricing version generated it (`pricingVersion` + matched `services`) so the feedback loop can attribute outcomes to price points. Stale SENT proposals auto-expire after 30 days.
+
 ---
 
 ## 🚀 Easy Local Setup

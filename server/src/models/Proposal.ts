@@ -12,6 +12,9 @@ export interface IProposal extends Document {
   paymentMilestones: { description: string; amount: number }[];
   pdfUrl?: string;
   generatedBy?: mongoose.Types.ObjectId;
+  services: string[];
+  pricingVersion?: number;
+  expiresAt?: Date;
   status: 'DRAFT' | 'GENERATED' | 'SENT' | 'APPROVED' | 'REJECTED' | 'EXPIRED';
   createdAt: Date;
   updatedAt: Date;
@@ -35,6 +38,9 @@ const ProposalSchema = new Schema<IProposal>(
     ],
     pdfUrl: { type: String },
     generatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    services: { type: [String], default: [] },
+    pricingVersion: { type: Number },
+    expiresAt: { type: Date },
     status: {
       type: String,
       enum: ['DRAFT', 'GENERATED', 'SENT', 'APPROVED', 'REJECTED', 'EXPIRED'],

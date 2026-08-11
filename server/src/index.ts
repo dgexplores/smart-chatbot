@@ -10,8 +10,10 @@ import { initializeQdrant } from './services/rag.js';
 import authRoutes from './routes/auth.js';
 import knowledgeRoutes from './routes/knowledge.js';
 import leadRoutes from './routes/leads.js';
+import proposalRoutes from './routes/proposals.js';
 import { rateLimiter } from './middleware/rateLimiter.js';
 import { config } from './config/env.js';
+import { ensurePricingConfig, startPricingJob } from './services/pricing.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,6 +24,9 @@ await connectDB();
 await seedDatabase();
 // Initialize Qdrant
 await initializeQdrant();
+// Seed + schedule adaptive pricing
+await ensurePricingConfig();
+startPricingJob();
 
 const app = express();
 const port = config.port;
@@ -41,6 +46,7 @@ app.use(rateLimiter(100, 60 * 1000));
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/knowledge', knowledgeRoutes);
 app.use('/api/v1/leads', leadRoutes);
+app.use('/api/v1/proposals', proposalRoutes);
 
 // Static Assets
 app.use('/proposals', express.static(path.join(__dirname, '../public/proposals')));

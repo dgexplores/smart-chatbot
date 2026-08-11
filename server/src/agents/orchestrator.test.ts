@@ -7,6 +7,7 @@ import { Meeting } from '../models/Meeting.js';
 import { Proposal } from '../models/Proposal.js';
 import { generateAIResponse } from '../services/ai.js';
 import { sendEmail } from '../services/email.js';
+import { getActiveRates } from '../services/pricing.js';
 import type { AIResponse } from '../services/ai.js';
 
 // ---------------------------------------------------------------------------
@@ -79,6 +80,11 @@ vi.mock('../services/email.js', () => ({
   sendEmail: vi.fn().mockResolvedValue(true)
 }));
 
+vi.mock('../services/pricing.js', () => ({
+  getActiveRates: vi.fn(),
+  estimatePrice: vi.fn()
+}));
+
 vi.mock('../services/pdf.js', () => ({
   generateProposalPDF: vi.fn()
 }));
@@ -133,6 +139,7 @@ beforeEach(() => {
   (Lead.findOne as any).mockResolvedValue(null);
   (Meeting.findOne as any).mockResolvedValue(null);
   (Proposal.findOne as any).mockResolvedValue(null);
+  vi.mocked(getActiveRates).mockResolvedValue({ version: 1, rates: [] });
 });
 
 // ---------------------------------------------------------------------------
