@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import dotenv from 'dotenv';
 import http from 'http';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -12,11 +11,10 @@ import authRoutes from './routes/auth.js';
 import knowledgeRoutes from './routes/knowledge.js';
 import leadRoutes from './routes/leads.js';
 import { rateLimiter } from './middleware/rateLimiter.js';
+import { config } from './config/env.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-dotenv.config();
 
 // Connect to Database
 await connectDB();
@@ -26,12 +24,12 @@ await seedDatabase();
 await initializeQdrant();
 
 const app = express();
-const port = process.env.PORT || 5001;
+const port = config.port;
 
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: config.clientUrl,
   credentials: true
 }));
 app.use(express.json());
@@ -65,5 +63,5 @@ initSocket(server);
 
 server.listen(port, () => {
   console.log(`[Server] ASEP backend listening at http://localhost:${port}`);
-  console.log(`[Server] Environment: ${process.env.NODE_ENV}`);
+  console.log(`[Server] Environment: ${config.nodeEnv}`);
 });

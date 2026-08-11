@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
+import { config } from './env.js';
 
 export const connectDB = async (): Promise<void> => {
-  const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/asep';
+  const mongoUri = config.mongoUri;
 
   try {
     console.log(`[Database] Connecting to MongoDB...`);

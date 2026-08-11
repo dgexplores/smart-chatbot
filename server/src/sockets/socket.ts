@@ -2,6 +2,7 @@ import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import { Conversation } from '../models/Conversation.js';
+import { config } from '../config/env.js';
 import { Message } from '../models/Message.js';
 import { Lead } from '../models/Lead.js';
 import { AgentOrchestrator } from '../agents/orchestrator.js';
@@ -27,8 +28,7 @@ export const initSocket = (server: HttpServer): Server => {
     }
 
     try {
-      const secret = process.env.JWT_SECRET || 'asep_super_secret_jwt_key_2026';
-      const decoded = jwt.verify(token, secret);
+      const decoded = jwt.verify(token, config.jwtSecret);
       socket.data.user = decoded;
       next();
     } catch (err) {

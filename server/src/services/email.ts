@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { config } from '../config/env.js';
 
 export interface EmailData {
   to: string;
@@ -8,10 +9,10 @@ export interface EmailData {
 }
 
 const getTransporter = () => {
-  const host = process.env.SMTP_HOST;
-  const port = parseInt(process.env.SMTP_PORT || '2525', 10);
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const host = config.smtpHost;
+  const port = config.smtpPort;
+  const user = config.smtpUser;
+  const pass = config.smtpPass;
 
   if (!user || !pass) {
     // If no credentials, we return null to fall back to Console logger mock
@@ -32,7 +33,7 @@ const getTransporter = () => {
  * Dispatches an email notification. Falls back to console log if SMTP credentials are blank.
  */
 export const sendEmail = async (data: EmailData): Promise<boolean> => {
-  const from = process.env.SMTP_FROM || 'noreply@asep.local';
+  const from = config.smtpFrom;
   const transporter = getTransporter();
 
   if (!transporter) {

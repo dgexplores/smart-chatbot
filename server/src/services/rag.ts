@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { config } from '../config/env.js';
 
 export interface RAGChunk {
   id: string;
@@ -18,7 +19,7 @@ const VECTOR_SIZE = 768; // Size for gemini text-embedding-004
 
 // Helper to get Gemini embeddings natively
 const getEmbedding = async (text: string): Promise<number[]> => {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = config.geminiApiKey;
   if (!apiKey) {
     // Return a dummy vector of 768 size for testing/mocking
     return new Array(VECTOR_SIZE).fill(0).map(() => Math.random());
@@ -39,7 +40,7 @@ const getEmbedding = async (text: string): Promise<number[]> => {
 
 // Check if Qdrant is responsive, or if we should run in mock RAG mode
 const isQdrantActive = async (): Promise<boolean> => {
-  const url = process.env.QDRANT_URL || 'http://localhost:6333';
+  const url = config.qdrantUrl;
   try {
     const response = await fetch(`${url}/readyz`, { signal: AbortSignal.timeout(1000) });
     return response.ok;
@@ -50,8 +51,8 @@ const isQdrantActive = async (): Promise<boolean> => {
 
 // Helper for Qdrant API requests
 const qdrantFetch = async (path: string, options: RequestInit = {}): Promise<any> => {
-  const baseUrl = process.env.QDRANT_URL || 'http://localhost:6333';
-  const apiKey = process.env.QDRANT_API_KEY;
+  const baseUrl = config.qdrantUrl;
+  const apiKey = config.qdrantApiKey;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

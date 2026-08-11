@@ -1,7 +1,8 @@
 import { Response } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { User } from '../models/User.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
+import { config } from '../config/env.js';
 
 export const login = async (req: AuthenticatedRequest, res: Response) => {
   const { email, password } = req.body;
@@ -36,11 +37,10 @@ export const login = async (req: AuthenticatedRequest, res: Response) => {
     await user.save();
 
     // Generate Token
-    const secret = process.env.JWT_SECRET || 'asep_super_secret_jwt_key_2026';
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
-      secret,
-      { expiresIn: '24h' }
+      config.jwtSecret,
+      { expiresIn: config.jwtExpiresIn as SignOptions['expiresIn'] }
     );
 
     return res.status(200).json({

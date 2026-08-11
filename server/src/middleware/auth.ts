@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { config } from '../config/env.js';
 
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -22,8 +23,7 @@ export const authenticate = (req: AuthenticatedRequest, res: Response, next: Nex
   const token = authHeader.split(' ')[1];
 
   try {
-    const secret = process.env.JWT_SECRET || 'asep_super_secret_jwt_key_2026';
-    const decoded = jwt.verify(token, secret) as {
+    const decoded = jwt.verify(token, config.jwtSecret) as {
       id: string;
       email: string;
       role: 'admin' | 'executive' | 'manager' | 'viewer';

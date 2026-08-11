@@ -7,6 +7,7 @@ import { Proposal } from '../models/Proposal.js';
 import { Meeting } from '../models/Meeting.js';
 import { generateProposalPDF } from '../services/pdf.js';
 import { sendEmail } from '../services/email.js';
+import { config } from '../config/env.js';
 
 export class AgentOrchestrator {
   /**
@@ -200,6 +201,8 @@ Match this schema exactly:
     try {
       const data = aiResponse.customerData;
       let shouldUpdateLead = false;
+      // True only when the customer shares their email for the first time (used for the deferred meeting email)
+      const emailProvidedNow = Boolean(data?.email && !lead.email);
 
       // Map dynamic updates to Lead document
       if (data) {
@@ -250,7 +253,7 @@ Match this schema exactly:
         console.log(`[Orchestrator] Saved lead info for sessionId: ${conversation.sessionId}`);
 
         // If email was just provided, and a meeting was already requested, send the calendar email confirmation now!
-        if (lead.email && shouldUpdateLead) {
+        if (emailProvidedNow && lead.email) {
           const meeting = await Meeting.findOne({ leadId: lead._id, status: 'REQUESTED' });
           if (meeting) {
             const textContent = `Hi ${lead.customerName || 'there'},
@@ -323,7 +326,7 @@ XYZ Technologies Consulting Team`;
           try {
             // Generate PDF file
             const pdfPath = await generateProposalPDF(pdfData);
-            const pdfUrl = `http://localhost:5001/proposals/proposal_${proposalNumber}.pdf`;
+            const pdfUrl = `${config.publicBaseUrl}/proposals/proposal_${proposalNumber}.pdf`;
 
             // Save Proposal to DB
             const proposal = new Proposal({

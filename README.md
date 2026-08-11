@@ -77,7 +77,7 @@ We have included an automated setup utility script to prepare your workspace in 
    ./setup.sh
    ```
    *This script will verify prerequisites, copy `.env.example` templates, install dependency trees, and pre-compile the server and client builds.*
-3. Open `server/.env` and update your `MONGO_URI` and `GEMINI_API_KEY`.
+3. Open `server/.env` and update your `MONGO_URI`, `GEMINI_API_KEY`, and `JWT_SECRET` (the server refuses to boot with the placeholder secret). For production, also set `PUBLIC_BASE_URL` to your deployed API URL so proposal PDF links work.
 4. Launch the application:
    * **Start Backend API:** `cd server && npm run start`
    * **Start Client Dev:** `cd client && npm run dev`

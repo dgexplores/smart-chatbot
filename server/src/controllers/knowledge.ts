@@ -2,11 +2,12 @@ import { Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { KnowledgeBase } from '../models/KnowledgeBase.js';
 import { splitText, uploadToRAG } from '../services/rag.js';
+import { config } from '../config/env.js';
 
 // Helper to delete points from Qdrant
 const deleteFromQdrantByDocId = async (documentId: string): Promise<void> => {
-  const url = process.env.QDRANT_URL || 'http://localhost:6333';
-  const apiKey = process.env.QDRANT_API_KEY;
+  const url = config.qdrantUrl;
+  const apiKey = config.qdrantApiKey;
 
   try {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };

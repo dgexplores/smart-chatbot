@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { config } from '../config/env.js';
 
 // Interface for structured output from the LLM
 export interface AIResponse {
@@ -40,8 +41,8 @@ let aiClient: any = null;
 const getAIClient = () => {
   if (aiClient) return aiClient;
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey && process.env.MOCK_LLM !== 'true') {
+  const apiKey = config.geminiApiKey;
+  if (!apiKey && !config.mockLlm) {
     throw new Error('[AI Service] GEMINI_API_KEY is not defined in environment variables.');
   }
 
@@ -183,7 +184,7 @@ I recommend the **Professional Package** for your requirements. Which package wo
 };
 
 export const generateAIResponse = async (prompt: string, currentStage: string): Promise<AIResponse> => {
-  const isMockMode = process.env.MOCK_LLM === 'true';
+  const isMockMode = config.mockLlm;
 
   if (isMockMode) {
     return generateMockResponse(prompt, currentStage);
@@ -191,8 +192,7 @@ export const generateAIResponse = async (prompt: string, currentStage: string): 
 
   try {
     const client = getAIClient();
-    // Default model is gemini-flash-lite-latest if not specified
-    const modelName = process.env.GEMINI_MODEL || 'gemini-flash-lite-latest';
+    const modelName = config.geminiModel;
     const model = client.getGenerativeModel({
       model: modelName,
       generationConfig: {
