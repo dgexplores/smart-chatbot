@@ -318,7 +318,7 @@ export const Dashboard: React.FC = () => {
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
   const socketRef = useRef<Socket | null>(null);
-  const serverUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+  const serverUrl = import.meta.env.VITE_API_URL || window.location.origin;
 
   // Load Leads on start
   useEffect(() => {

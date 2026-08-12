@@ -8,7 +8,7 @@ function App() {
   const [viewMode, setViewMode] = useState<'customer' | 'executive'>('customer');
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   
-  const serverUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+  const serverUrl = import.meta.env.VITE_API_URL || window.location.origin;
 
   const handleLoginSuccess = (newToken: string) => {
     localStorage.setItem('token', newToken);

@@ -36,10 +36,9 @@ export const ChatWidget: React.FC = () => {
   useEffect(() => {
     if (!sessionId) return;
 
-    const serverUrl = import.meta.env.VITE_API_URL;
-    // The public Vercel demo can be explored without a separately deployed API.
-    // Connect only when an API endpoint is explicitly configured.
-    if (!serverUrl) return;
+    // Same-origin by default (single-URL setup: the server serves the client).
+    // An explicit VITE_API_URL overrides it for separate-host deployments (e.g. GitHub Pages).
+    const serverUrl = import.meta.env.VITE_API_URL || window.location.origin;
     const socket = io(serverUrl, {
       withCredentials: true
     });
