@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.asep.server</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/dgsmacbook/.local/bin/node</string>
+        <string>/Users/dgsmacbook/Documents/PROJECTS/smart-chatbot/smart-chatbot/server/dist/index.js</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/dgsmacbook/Documents/PROJECTS/smart-chatbot/smart-chatbot/server</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>NODE_ENV</key>
+        <string>production</string>
+        <key>JWT_SECRET</key>
+        <string>85e2ec7a3daea4c012f5f959df9a5ee483bc05e158279ed44a05a8d37cbb1b10</string>
+        <key>PORT</key>
+        <string>5001</string>
+        <key>MOCK_LLM</key>
+        <string>true</string>
+        <key>SEED_DEMO_DATA</key>
+        <string>true</string>
+        <key>MONGO_URI</key>
+        <string>mongodb://localhost:27017/asep</string>
+        <key>QDRANT_URL</key>
+        <string>http://localhost:6333</string>
+        <key>CLIENT_URL</key>
+        <string>https://dgexplores.github.io,http://localhost:5173</string>
+        <key>PUBLIC_BASE_URL</key>
+        <string>https://essay-roof-alpha-suse.trycloudflare.com</string>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/asep-server.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/asep-server.log</string>
+</dict>
+</plist>

@@ -52,7 +52,7 @@ app.use(
         ...helmet.contentSecurityPolicy.getDefaultDirectives(),
         'connect-src': [
           "'self'",
-          config.clientUrl,
+          ...config.clientOrigins,
           config.publicBaseUrl,
           'ws:',
           'wss:'
