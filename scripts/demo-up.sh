@@ -34,11 +34,11 @@ done
 [ -n "$URL" ] || { echo "❌ Tunnel failed to start:"; tail -5 /tmp/cloudflared.log; exit 1; }
 echo "   ✓ Tunnel: $URL"
 
-echo "→ [4/5] Building client against tunnel URL"
-(cd "$ROOT/client" && VITE_API_URL="$URL" npm run build >/dev/null 2>&1) && echo "   ✓ Client built"
+echo "→ [4/5] Building client (same-origin default — no URL baked in)"
+(cd "$ROOT/client" && npm run build >/dev/null 2>&1) && echo "   ✓ Client built"
 
 echo "→ [5/5] Starting server (demo data seeded on first boot)"
-screen -dmS asep-server bash -c "cd '$ROOT/server' && JWT_SECRET=\$(openssl rand -hex 32) MOCK_LLM=true SEED_DEMO_DATA=true NODE_ENV=production MONGO_URI=mongodb://localhost:27017/asep QDRANT_URL=http://localhost:6333 CLIENT_URL='$URL' PUBLIC_BASE_URL='$URL' PORT=5001 node dist/index.js > /tmp/asep-server.log 2>&1"
+screen -dmS asep-server bash -c "cd '$ROOT/server' && JWT_SECRET=\$(openssl rand -hex 32) MOCK_LLM=true SEED_DEMO_DATA=true NODE_ENV=production MONGO_URI=mongodb://localhost:27017/asep QDRANT_URL=http://localhost:6333 PUBLIC_BASE_URL='$URL' PORT=5001 node dist/index.js > /tmp/asep-server.log 2>&1"
 for _ in $(seq 1 30); do
   curl -sf -m 3 http://localhost:5001/health >/dev/null 2>&1 && break
   sleep 1
