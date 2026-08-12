@@ -24,7 +24,7 @@ const envSchema = z
       .string()
       .min(16, 'JWT_SECRET must be at least 16 characters and must not be the default placeholder.'),
     JWT_EXPIRES_IN: z.string().min(1).default('24h'),
-    CLIENT_URL: z.string().url().default('http://localhost:5173'),
+    CLIENT_URL: z.string().default('http://localhost:5173'),
     PUBLIC_BASE_URL: z.string().url().default('http://localhost:5001'),
     SMTP_HOST: z.string().min(1).default('smtp.mailtrap.io'),
     SMTP_PORT: z.coerce.number().int().positive().default(2525),
@@ -63,6 +63,11 @@ const parsed = envSchema
     jwtSecret: data.JWT_SECRET,
     jwtExpiresIn: data.JWT_EXPIRES_IN,
     clientUrl: data.CLIENT_URL,
+    // Comma-separated list of allowed client origins (CORS):
+    // "https://app.example.com,https://dgexplores.github.io"
+    clientOrigins: data.CLIENT_URL.split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean),
     publicBaseUrl: data.PUBLIC_BASE_URL,
     smtpHost: data.SMTP_HOST,
     smtpPort: data.SMTP_PORT,

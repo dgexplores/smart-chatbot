@@ -12,7 +12,7 @@ let io: Server | null = null;
 export const initSocket = (server: HttpServer): Server => {
   io = new Server(server, {
     cors: {
-      origin: [config.clientUrl, `http://localhost:${config.port}`],
+      origin: [...config.clientOrigins, `http://localhost:${config.port}`],
       methods: ['GET', 'POST'],
       credentials: true
     }

@@ -1,0 +1,39 @@
+name: Deploy client to GitHub Pages
+
+# Serves the client at https://<owner>.github.io/smart-chatbot/
+# Set the repository VARIABLE ASEP_API_URL to the backend URL (e.g. the
+# Render service URL or the cloudflared tunnel URL) before/after running.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['client/**', '.github/workflows/deploy-pages.yml']
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build client
+        working-directory: client
+        run: |
+          npm ci
+          VITE_BASE=/smart-chatbot/ VITE_API_URL="${{ vars.ASEP_API_URL }}" npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: client/dist
+      - uses: actions/deploy-pages@v4

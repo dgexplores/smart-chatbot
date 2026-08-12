@@ -62,7 +62,7 @@ app.use(
   })
 );
 app.use(cors({
-  origin: config.clientUrl,
+  origin: config.clientOrigins,
   credentials: true
 }));
 app.use(express.json());

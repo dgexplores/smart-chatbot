@@ -4,6 +4,9 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // Base path override for subpath hosting (e.g. GitHub Pages:
+  // VITE_BASE=/smart-chatbot/ npm run build)
+  base: process.env.VITE_BASE || '/',
   plugins: [react()],
   resolve: {
     alias: {
