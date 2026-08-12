@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import http from 'http';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { connectDB } from './config/db.js';
 import { seedDatabase } from './utils/seed.js';
@@ -42,8 +43,24 @@ startMarketScanner();
 const app = express();
 const port = config.port;
 
-// Middleware
-app.use(helmet());
+// Middleware — CSP allows same-origin plus the configured client/API origins
+// (needed when the client is served from a different origin than the API).
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        'connect-src': [
+          "'self'",
+          config.clientUrl,
+          config.publicBaseUrl,
+          'ws:',
+          'wss:'
+        ]
+      }
+    }
+  })
+);
 app.use(cors({
   origin: config.clientUrl,
   credentials: true
@@ -64,6 +81,26 @@ app.use('/api/v1/market-targets', marketTargetRoutes);
 
 // Static Assets
 app.use('/proposals', express.static(path.join(__dirname, '../public/proposals')));
+
+// Serve the built client (SPA) when present — enables single-origin hosting
+// (client + API on one URL, no CORS). Skipped in the Docker image, which only
+// contains the server.
+const clientDist = path.join(__dirname, '../../client/dist');
+if (fs.existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  app.get('*', (req, res, next) => {
+    if (
+      req.path.startsWith('/api') ||
+      req.path.startsWith('/proposals') ||
+      req.path.startsWith('/socket.io') ||
+      req.path.startsWith('/health')
+    ) {
+      return next();
+    }
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
+  console.log('[Server] Serving client build from', clientDist);
+}
 
 // Basic Routes
 app.get('/', (req, res) => {
