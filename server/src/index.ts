@@ -6,6 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { connectDB } from './config/db.js';
 import { seedDatabase } from './utils/seed.js';
+import { seedDemoData } from './utils/seedDemo.js';
 import { initializeQdrant } from './services/rag.js';
 import authRoutes from './routes/auth.js';
 import knowledgeRoutes from './routes/knowledge.js';
@@ -26,6 +27,10 @@ const __dirname = path.dirname(__filename);
 await connectDB();
 // Seed Database
 await seedDatabase();
+// Seed showcase demo data (SEED_DEMO_DATA=true)
+if (config.seedDemoData) {
+  await seedDemoData();
+}
 // Initialize Qdrant
 await initializeQdrant();
 // Seed + schedule adaptive pricing

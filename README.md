@@ -92,3 +92,39 @@ We have included an automated setup utility script to prepare your workspace in 
    * **Start Backend API:** `cd server && npm run start`
    * **Start Client Dev:** `cd client && npm run dev`
 5. Open **http://localhost:5173** to interact with the platform!
+
+## ☁️ Deployment (free tier, judge-demo ready)
+
+The recommended free setup keeps the whole product alive reliably: **Vercel** for the
+client, **Koyeb** for the long-running server (WebSockets + scheduled pricing/market
+jobs need a real process, not serverless), and **MongoDB Atlas** free tier for data.
+Qdrant is optional — the RAG layer falls back to built-in chunks when it is offline.
+
+### 1. Server → Koyeb (`koyeb.yaml` at repo root)
+1. Sign up at koyeb.com (GitHub login works).
+2. Import the repo **dgexplores/smart-chatbot** → it picks up `koyeb.yaml`
+   (builds `server/Dockerfile`, runs on port 5001, health-checked at `/health`).
+3. Set service variables (secrets are never committed):
+   - `JWT_SECRET` (required — generate with `openssl rand -hex 32`)
+   - `MONGO_URI` from your Atlas cluster
+   - `PUBLIC_BASE_URL` = the Koyeb service URL (makes proposal PDF links work)
+   - `CLIENT_URL` = the Vercel URL below (CORS)
+   - `MOCK_LLM=false` + `GEMINI_API_KEY` for real AI (free key at aistudio.google.com)
+4. `SEED_DEMO_DATA=true` is set in `koyeb.yaml` — on first boot it seeds 10 realistic
+   leads, conversations, proposals (with win/loss outcomes), meetings, and 8 weeks of
+   competitor market observations so the dashboard looks alive for a showcase.
+
+### 2. Client → Vercel
+1. `vercel login`, then from `client/`: `vercel --prod` (uses `client/vercel.json`).
+2. Set `VITE_API_URL` to the Koyeb service URL in the project settings and rebuild.
+
+### 3. Verify
+- `GET https://<server>/health` → `{ status: 'ok' }`
+- `GET https://<server>/api/v1/pricing/rates` → live rate card with multipliers
+- Open the Vercel URL → chat widget talks to the real backend via WebSockets.
+
+### Alternative hosts
+- **Railway** (`scripts/deploy-railway.sh` — one-command deploy): note the free plan
+  can hit the resource-provision limit; Hobby ($5/mo) is required for more services.
+- **Docker anywhere**: `server/Dockerfile` builds the API for any container host.
+- **Render/Fly**: same Dockerfile; expect free-tier sleep/cold-start behaviour.

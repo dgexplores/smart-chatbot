@@ -16,6 +16,10 @@ const envSchema = z
       .enum(['true', 'false'])
       .default('false')
       .transform((value) => value === 'true'),
+    SEED_DEMO_DATA: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
     JWT_SECRET: z
       .string()
       .min(16, 'JWT_SECRET must be at least 16 characters and must not be the default placeholder.'),
@@ -55,6 +59,7 @@ const parsed = envSchema
     geminiApiKey: data.GEMINI_API_KEY,
     geminiModel: data.GEMINI_MODEL,
     mockLlm: data.MOCK_LLM,
+    seedDemoData: data.SEED_DEMO_DATA,
     jwtSecret: data.JWT_SECRET,
     jwtExpiresIn: data.JWT_EXPIRES_IN,
     clientUrl: data.CLIENT_URL,

@@ -1,0 +1,43 @@
+# ─────────────────────────────────────────────────────────────
+# Koyeb declarative config — ASEP server (free tier friendly)
+#
+# Deploy:  koyeb app init --file koyeb.yaml   (or import in dashboard)
+#
+# NOTE: Secrets are intentionally NOT committed here. Set them as
+# Koyeb service variables instead:
+#   JWT_SECRET, MONGO_URI, GEMINI_API_KEY, PUBLIC_BASE_URL, CLIENT_URL
+# ─────────────────────────────────────────────────────────────
+app:
+  name: asep
+services:
+  - name: server
+    routes:
+      - port: 5001
+        path: /
+    sources:
+      - project: dgexplores/smart-chatbot
+        branch: main
+        subfolder: server
+        build:
+          dockerfile: Dockerfile
+    env:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "5001"
+      # Deterministic mock LLM for reliable judge demos; set to "false"
+      # and add GEMINI_API_KEY for real AI conversations.
+      - key: MOCK_LLM
+        value: "true"
+      # Seed showcase data (leads, proposals, market history) on boot.
+      - key: SEED_DEMO_DATA
+        value: "true"
+    instance_types:
+      - name: nano
+    health_checks:
+      - port: 5001
+        path: /health
+        interval: 30
+        timeout: 3
+        unhealthy_threshold: 3
+        healthy_threshold: 1
