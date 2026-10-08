@@ -1,4 +1,7 @@
 # AI Sales Executive Platform (ASEP)
+
+[![Deploy Client](https://github.com/dgexplores/smart-chatbot/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/dgexplores/smart-chatbot/actions) [![Keep Alive](https://github.com/dgexplores/smart-chatbot/actions/workflows/keep-alive.yml/badge.svg)](https://github.com/dgexplores/smart-chatbot/actions)
+
 An industry-grade, autonomous pre-sales qualification agent and real-time CRM monitoring platform designed for Indian IT consultancy markets.
 
 This platform uses an event-driven web-sockets architecture, a custom state-machine orchestrator powered by the Gemini Flash Lite SDK, semantic RAG vector querying, and custom transactional mail dispatches to qualify leads, automate proposals, and schedule callbacks dynamically.
