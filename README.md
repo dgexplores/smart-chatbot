@@ -8,9 +8,14 @@ This platform uses an event-driven web-sockets architecture, a custom state-mach
 
 ## 🎬 Demo video — what ASEP is & how to use it
 
-<video src="https://raw.githubusercontent.com/dgexplores/smart-chatbot/main/docs/demo_asep.mp4" controls muted autoplay loop playsinline></video>
+<p align="center">
+  <a href="https://github.com/dgexplores/smart-chatbot/blob/main/docs/demo_asep.mp4">
+    <img src="docs/demo_poster.png" alt="Watch the 25-second demo — recorded screen capture of the real deployed client" width="860">
+  </a>
+  <br><sub>▶ <b>Click the poster</b> to play the 25-second demo in GitHub's built-in player — or download the <a href="https://github.com/dgexplores/smart-chatbot/raw/main/docs/demo_asep.mp4">raw mp4</a> (1.3 MB)</sub>
+</p>
 
-*Direct link: [docs/demo_asep.mp4](docs/demo_asep.mp4)* — recorded screen capture of the real deployed client (UI-only mode; see the confidential note below for why live AI responses are not shown here).
+*(Recorded screen capture of the real deployed client — **UI-only mode**; see the confidentiality note below for why live AI responses are not shown here.)*
 
 **Timeline of the video (captions are on-screen):**
 
