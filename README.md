@@ -6,6 +6,29 @@ An industry-grade, autonomous pre-sales qualification agent and real-time CRM mo
 
 This platform uses an event-driven web-sockets architecture, a custom state-machine orchestrator powered by the Gemini Flash Lite SDK, semantic RAG vector querying, and custom transactional mail dispatches to qualify leads, automate proposals, and schedule callbacks dynamically.
 
+## 🎬 Demo video — what ASEP is & how to use it
+
+<video src="https://raw.githubusercontent.com/dgexplores/smart-chatbot/main/docs/demo_asep.mp4" controls muted autoplay loop playsinline></video>
+
+*Direct link: [docs/demo_asep.mp4](docs/demo_asep.mp4)* — recorded screen capture of the real deployed client (UI-only mode; see the confidential note below for why live AI responses are not shown here).
+
+**Timeline of the video (captions are on-screen):**
+
+| Caption | What you are seeing |
+|---|---|
+| ASEP — AI Sales Executive Platform | Landing hero: *"One Stop Solution For All Your Tech Company Needs"* + primary CTA |
+| 01 · The journey | Product story — **Understand → Organize → Connect** |
+| 02 · Assistant handles discovery | *"A smart assistant that keeps your people in control"* — Start with the goal → Shape the brief → Move forward together |
+| 03 · Helpful automation, human relationships | Context never disappears — your workflow stays yours |
+| 04 · One conversation → qualified brief | The enquiry-to-brief value path |
+| 05–06 · Chat companion | The slide-up AI Sales Assistant opens with suggestion pills (**Need website · Cost estimates · Book meeting**) and a visitor types a requirement |
+
+**How a visitor uses it (live demo):**
+1. Open [https://client-blue-nu-26.vercel.app](https://client-blue-nu-26.vercel.app).
+2. Click the floating chat button (or **Talk to ASEP** / **Start a conversation**).
+3. Pick a suggestion pill or type a requirement — the assistant structures it in conversation. *(Live AI responses require the backend; the public instance intentionally runs UI-only — see `VITE_API_URL` in Live Demo.)*
+4. In production, a qualified chat turns into a structured brief that an **executive workspace** picks up for negotiation and handoff.
+
 ## Live Demo
 
 The redesigned client is deployed on Vercel: [https://client-blue-nu-26.vercel.app](https://client-blue-nu-26.vercel.app)
@@ -25,6 +48,16 @@ graph TD
     Server <-->|Structured JSON Prompting| Gemini[Google Gemini AI Engine]
     Server -->|Nodemailer SMTP| SMTP[SMTP Transactional Email Service]
 ```
+
+### 🔁 Conversation State Machine (the pre-sales spine)
+
+```mermaid
+flowchart LR
+    G[GREETING] --> D[DISCOVERY] --> R[REQUIREMENT_COLLECTION] --> B[BRAINSTORMING] --> Q[QUALIFICATION] --> P1[PACKAGE_RECOMMENDATION] --> P2[PROPOSAL_GENERATION] --> HO[HANDOFF] --> CL[CLOSED]
+    HO -. human takeover: AI paused, executive joins the socket room .-> CL
+```
+
+Each transition fires only when the orchestrator qualifies the required parameters (BANT-style: budget, need, timeline, authority). Mid-flow, **HANDOFF** pauses AI replies over Socket.io and hands the room to a human executive — the visitor sees one continuous conversation.
 
 ### 1. Backend Architecture (Express + TypeScript)
 * **Design Pattern: State Machine Orchestrator**
@@ -72,6 +105,24 @@ graph TD
 * **Automatic market capture:** a market scanner periodically fetches configured competitor pricing pages (`MarketTarget` records, managed via `/api/v1/market-targets`) and extracts INR rates — JSON-LD structured data first, plain `₹` amounts as fallback. Observations land in `CompetitorPrice` and feed the next re-tune. Run it on demand with `POST /api/v1/market-targets/scan`; the check interval is `MARKET_SCAN_HOURS` (default 24h) and each target has its own refresh window (`intervalHours`, default weekly).
 
 ---
+
+## 🧭 Capabilities — as of now
+
+| Area | Status |
+|---|---|
+| Real-time visitor chat (slide-up widget, suggestion pills, typing indicators) | ✅ in code, runs in the public demo |
+| 9-state qualification orchestrator (BANT-driven transitions) | ✅ in code — needs backend to run live |
+| Human takeover + Executive CRM workspace (pipeline, takeover console, callback timers) | ✅ in code — needs backend + JWT |
+| RAG grounding (chunked docs → embeddings → Qdrant search → retrieved context) | ✅ in code — falls back to built-in chunks without Qdrant |
+| Adaptive market pricing (versioned `PricingConfig` rate card, ±30% corridor, daily re-tune) | ✅ in code with server tests |
+| Market scanner (competition INR rate capture from configured pages) | ✅ in code |
+| Natural-language callback scheduling ("tomorrow at 5 PM" → UTC) | ✅ in code |
+| PDF proposals + deferred transactional email | ✅ in code — needs SMTP service |
+| Security (JWT roles, Helmet, rate limiting) | ✅ server-side |
+| Demo data seeding (10 leads, proposals w/ outcomes, meetings, 8 weeks competitor data) | ✅ `SEED_DEMO_DATA=true` |
+| **Live public deployment** | ✅ **UI-only** — the deployed backend, keys and live AI responses are kept confidential (below) |
+
+**Status, honestly:** this is a **functional prototype**. Architecture and workflow are proven (and tested server-side); full production operation needs configured external services — Gemini API key, MongoDB, Qdrant, SMTP, auth deployment — exactly as listed in the deployment sections below.
 
 ## 🚀 Easy Local Setup
 
@@ -131,3 +182,32 @@ Qdrant is optional — the RAG layer falls back to built-in chunks when it is of
   can hit the resource-provision limit; Hobby ($5/mo) is required for more services.
 - **Docker anywhere**: `server/Dockerfile` builds the API for any container host.
 - **Render/Fly**: same Dockerfile; expect free-tier sleep/cold-start behaviour.
+
+---
+
+## 🔒 Confidentiality note
+
+The **full production deployment of this platform is protected and confidential to the company**. The publicly launched instance is intentionally **UI-only** — the live backend, API keys, customer records, vector database contents and server configuration are not and will not be published. This repository contains the **showcase portion** built during the internship: the client, the server architecture, the agent logic, tests and the demo configuration. To evaluate the whole product live, deploy it yourself per the deployment guide above (free tier, ~30 minutes).
+
+## 🙋 FAQ — questions the presentation panel may ask
+
+**Q. Did you build this entirely yourself?**
+> During the internship I studied and documented the architecture, conversation flow and interface, and worked on refinement around it. The platform was at prototype stage then; this repository now presents the fuller system. What I can fully explain and demonstrate is its design: the 9-state workflow, the client–server split, RAG grounding and the human handoff.
+
+**Q. What is RAG doing here — why not just ask the model directly?**
+> Direct model answers are generic. RAG retrieves project knowledge — docs are chunked, embedded, and searched in Qdrant — and feeds the retrieved context to Gemini, so answers come from approved company knowledge. Without Qdrant, the system falls back to built-in chunks.
+
+**Q. How does the executive takeover work?**
+> Socket.io rooms broadcast a takeover signal: AI replies pause, the executive joins the same conversation with full context (messages, brief, pricing), and can release the chat back to the AI afterwards.
+
+**Q. Is adaptive pricing real logic or a mock?**
+> Real logic with a bounded feedback loop: win/loss proposal outcomes, competitor observations and 7-day demand re-tune a versioned rate card every 24h within ±30%. Every proposal records the pricing version used, so outcomes attribute to price points. Server tests cover the orchestrator stages, pricing and an end-to-end flow.
+
+**Q. Is there any real customer data in this repo?**
+> No. `SEED_DEMO_DATA=true` seeds fabricated leads, conversations, proposals and market observations so the dashboard looks alive for evaluation. Production data stays on the confidential deployment.
+
+**Q. How would you take this from prototype to production?**
+> Deploy the server (Koyeb/Docker) with the configured services — Gemini key, MongoDB, Qdrant, SMTP, JWT secrets — connect `VITE_API_URL`, and monitor conversation quality. The deployment section above documents the exact steps.
+
+**Q. Why Gemini Flash Lite?**
+> It supports the structured-JSON prompting the orchestrator depends on for deterministic stage transitions, at a cost tier that suits continuous pre-sales conversation — with a `MOCK_LLM` fallback for offline development.
